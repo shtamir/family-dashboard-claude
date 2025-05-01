@@ -1,35 +1,90 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './services/auth';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Import pages
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
+import Login from './pages/Login';
+
+// Import components
+import Layout from './components/layout/Layout';
+import LoadingScreen from './components/common/LoadingScreen';
+
+// Protected route wrapper
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingScreen />;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+  
+  return children;
+};
+
+// Main app with routing
+const AppRoutes = () => {
+  const { isAuthenticated, loading } = useAuth();
+  const { i18n } = useTranslation();
+  const [direction, setDirection] = useState('ltr');
+  
+  // Set text direction based on language
+  useEffect(() => {
+    // Hebrew uses RTL layout
+    setDirection(i18n.language === 'he' ? 'rtl' : 'ltr');
+    document.documentElement.dir = direction;
+    document.documentElement.lang = i18n.language;
+  }, [i18n.language, direction]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className={`app-container ${direction}`}>
+      <Routes>
+        <Route path="/login" element={
+          isAuthenticated ? <Navigate to="/" /> : <Login />
+        } />
+        
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Layout>
+              <Settings />
+            </Layout>
+          </ProtectedRoute>
+        } />
+        
+        {/* Fallback route */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </div>
+  );
+};
+
+// Main app component with providers
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </Router>
+  );
 }
 
-export default App
+export default App;

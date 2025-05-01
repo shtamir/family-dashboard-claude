@@ -1,10 +1,39 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <meta name="theme-color" content="#3366CC" />
+    <meta name="description" content="Family TV Dashboard - A central hub for family information" />
+    <title>Family TV Dashboard</title>
+    <!-- Add preconnect for Google APIs -->
+    <link rel="preconnect" href="https://accounts.google.com">
+    <link rel="preconnect" href="https://www.googleapis.com">
+    <link rel="preconnect" href="https://openweathermap.org">
+    
+    <!-- Add favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Special styling for TV display -->
+    <style>
+      @media (min-width: 1920px) {
+        html {
+          font-size: 18px;
+        }
+      }
+      
+      /* Initial dark mode support before Tailwind loads */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #1a202c;
+          color: #f7fafc;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
