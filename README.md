@@ -3,11 +3,6 @@
 ## Overview
 This document outlines the requirements for a family portal web application that will be displayed primarily on a 65" 4K LG C1 OLED TV in the living room, as well as on family members' mobile phones and PCs.
 
-## Project Information
-- **GitHub Repository**: https://github.com/shtamir/family-tv-dashboard
-- **Deployment**: https://family-tv-dashboard.netlify.app
-- **Google OAuth 2.0 Client ID**: 477653231572-bbf1hj129rsn78uks60s9ennau5siunc.apps.googleusercontent.com
-
 ## Core Features
 
 ### 1. Family Calendar
