@@ -4,9 +4,13 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "prebuild": "node node_modules/esbuild/install.js && node node_modules/rollup/dist/bin/rollup --version",
+  "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
+  },
+  "engines": {
+  "node": "16.x || 18.x"
   },
   "dependencies": {
     "i18next": "^23.7.19",
