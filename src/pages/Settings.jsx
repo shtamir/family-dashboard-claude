@@ -16,7 +16,8 @@ const DEFAULT_SETTINGS = {
   showMessages: true,
   showTodos: true,
   showPhotos: true,
-  displayMode: 'auto', // 'auto', 'tv', or 'normal'
+  displayMode: 'auto', // 'auto', '4k', 'tv', or 'normal'
+  layoutDensity: 'normal', // 'compact', 'normal', 'expanded', 'maximum'
   password: '', // Default password will be set on first load
 };
 
@@ -35,23 +36,40 @@ const Settings = () => {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [saveMessage, setSaveMessage] = useState('');
   const [isTvMode, setIsTvMode] = useState(false);
+  const [screenInfo, setScreenInfo] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    userAgent: navigator.userAgent,
+    pixelRatio: window.devicePixelRatio || 1,
+    is4K: window.innerWidth >= 3800 || window.innerHeight >= 2000,
+    isHD: window.innerWidth >= 1920 || window.innerHeight >= 1080
+  });
 
-  // Detect TV mode based on screen size
-  useEffect(() => {
-    const detectTvMode = () => {
-      // Consider TV mode if width is larger than 1920px or height is larger than 1080px
-      const isTV = window.innerWidth >= 1920 || window.innerHeight >= 1080;
-      setIsTvMode(isTV);
-    };
+  // Detect screen capabilities based on screen size
+  const detectScreenCapabilities = () => {
+    const isTV = window.innerWidth >= 1920 || window.innerHeight >= 1080;
+    const is4K = window.innerWidth >= 3800 || window.innerHeight >= 2000;
     
-    // Initial detection
-    detectTvMode();
+    setIsTvMode(isTV);
+    setScreenInfo({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      userAgent: navigator.userAgent,
+      pixelRatio: window.devicePixelRatio || 1,
+      is4K: is4K,
+      isHD: isTV
+    });
+  };
+  
+  // Detect screen capabilities on mount and resize
+  useEffect(() => {
+    detectScreenCapabilities();
     
     // Listen for resize events
-    window.addEventListener('resize', detectTvMode);
+    window.addEventListener('resize', detectScreenCapabilities);
     
     return () => {
-      window.removeEventListener('resize', detectTvMode);
+      window.removeEventListener('resize', detectScreenCapabilities);
     };
   }, []);
 
@@ -116,13 +134,26 @@ const Settings = () => {
     }));
   };
 
-  // Apply TV mode settings
+  // Apply display mode settings
   const applyDisplayMode = (mode) => {
-    if (mode === 'tv' || (mode === 'auto' && isTvMode)) {
+    // Remove all display mode classes first
+    document.documentElement.classList.remove('tv-mode', '4k-mode');
+    
+    // Apply the appropriate class based on mode and screen detection
+    if (mode === '4k' || (mode === 'auto' && screenInfo.is4K)) {
+      document.documentElement.classList.add('4k-mode');
+    } else if (mode === 'tv' || (mode === 'auto' && screenInfo.isHD && !screenInfo.is4K)) {
       document.documentElement.classList.add('tv-mode');
-    } else {
-      document.documentElement.classList.remove('tv-mode');
     }
+    
+    // Store resolution stats for debugging
+    localStorage.setItem('family_portal_screen_info', JSON.stringify({
+      width: screenInfo.width,
+      height: screenInfo.height,
+      pixelRatio: screenInfo.pixelRatio,
+      userAgent: screenInfo.userAgent,
+      detectedAt: new Date().toISOString()
+    }));
   };
 
   // Save settings
@@ -301,11 +332,26 @@ const Settings = () => {
             </div>
           </div>
           
-          {/* Display Mode Settings */}
-          <div className="space-y-2">
+          {/* Display Mode & Resolution Settings */}
+          <div className="space-y-2 md:col-span-2">
             <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
               {t('settings.displayMode')}
             </h3>
+            
+            {/* Current Resolution Info */}
+            <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <p className="font-medium">{t('settings.currentResolution')}: {screenInfo.width} × {screenInfo.height}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t('settings.pixelRatio')}: {screenInfo.pixelRatio}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {screenInfo.is4K ? '✓ 4K Compatible' : ''}
+                {!screenInfo.is4K && screenInfo.isHD ? ' ✓ HD Compatible' : ''}
+                {!screenInfo.isHD ? ' ✓ Standard Resolution' : ''}
+              </p>
+            </div>
+            
+            {/* Display Mode Selection */}
             <div className="space-y-2">
               <label className="inline-flex items-center">
                 <input
@@ -318,6 +364,19 @@ const Settings = () => {
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.autoDetect')}
+                </span>
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="displayMode"
+                  value="4k"
+                  checked={settings.displayMode === '4k'}
+                  onChange={handleChange}
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
+                />
+                <span className="ml-2 text-gray-700 dark:text-gray-300">
+                  {t('settings.mode4k')}
                 </span>
               </label>
               <label className="inline-flex items-center">
@@ -346,6 +405,27 @@ const Settings = () => {
                   {t('settings.normalMode')}
                 </span>
               </label>
+            </div>
+            
+            {/* Layout Density Option */}
+            <div className="mt-4">
+              <h4 className="font-medium text-gray-800 dark:text-white mb-2">
+                {t('settings.layoutDensity')}
+              </h4>
+              <select
+                name="layoutDensity"
+                value={settings.layoutDensity || 'normal'}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${isTvMode ? 'tv-focus' : ''}`}
+              >
+                <option value="compact">{t('settings.compact')}</option>
+                <option value="normal">{t('settings.normal')}</option>
+                <option value="expanded">{t('settings.expanded')}</option>
+                <option value="maximum">{t('settings.maximum')}</option>
+              </select>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                {t('settings.layoutDensityHelp')}
+              </p>
             </div>
           </div>
           

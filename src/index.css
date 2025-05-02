@@ -139,3 +139,40 @@ html {
     height: 1.5rem !important;
   }
 }
+
+/* 4K Mode Styles */
+.dashboard-4k {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 4K grid layout specific adjustments */
+@media (min-width: 3800px) {
+  .dashboard-4k .widget-title {
+    font-size: 1.75rem;
+  }
+  
+  .dashboard-4k .widget-content {
+    font-size: 1.25rem;
+  }
+  
+  /* Adjust sizes for optimal 4K viewing */
+  .dashboard-4k .calendar-widget {
+    max-height: calc(50vh - 3rem);
+  }
+  
+  .dashboard-4k .weather-forecast {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  
+  .dashboard-4k .forecast-day {
+    flex: 1;
+  }
+  
+  /* Show more list items */
+  .dashboard-4k .message-list,
+  .dashboard-4k .todo-list {
+    max-height: calc(50vh - 3rem);
+  }
+}
