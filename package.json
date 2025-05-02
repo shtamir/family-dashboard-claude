@@ -3,15 +3,18 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  
+  "engines": {
+    "node": "16.x"
+  },
+  
   "scripts": {
-    "prebuild": "node node_modules/esbuild/install.js && node node_modules/rollup/dist/bin/rollup --version",
-  "dev": "vite",
+    "prebuild": "npm ci --legacy-peer-deps",
     "build": "vite build",
+    "dev": "vite",
     "preview": "vite preview"
   },
-  "engines": {
-  "node": "16.x || 18.x"
-  },
+
   "dependencies": {
     "i18next": "^23.7.19",
     "react": "^18.2.0",
@@ -20,6 +23,7 @@
     "react-router-dom": "^6.21.3"
   },
   "devDependencies": {
+    "rollup": "^2.79.1",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
@@ -27,6 +31,6 @@
     "esbuild": "^0.19.11",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.1",
-    "vite": "^5.0.8"
+    "vite": "^4.5.0"
   }
 }
