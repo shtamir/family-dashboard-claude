@@ -12,7 +12,7 @@ export const useSheetsService = () => {
   // Get spreadsheet ID from config or use default
   const getSpreadsheetId = () => {
     try {
-      const config = localStorage.getItem('family_portal_sheets_config');
+      const config = localStorage.getItem('family_portal_config');
       if (config) {
         const { spreadsheetId } = JSON.parse(config);
         return spreadsheetId || DEFAULT_SPREADSHEET_ID;
