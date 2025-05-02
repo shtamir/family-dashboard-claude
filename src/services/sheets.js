@@ -4,6 +4,7 @@ import { useAuth } from './auth';
 // Sheet ID from the shared Google Sheet
 const DEFAULT_SPREADSHEET_ID = '1doFkehlUaBnt6NBCfQQqwL0h4zANey2MWF9px3qgaDQ';
 
+
 // Google Sheets service for interacting with Google Sheets API
 export const useSheetsService = () => {
   const { fetchWithAuth } = useAuth();
