@@ -108,7 +108,12 @@ const enTranslations = {
     connected: 'Connected as',
     notConnected: 'Not connected',
     connect: 'Connect Account',
-    disconnect: 'Disconnect'
+    disconnect: 'Disconnect',
+    // New display mode translations
+    displayMode: 'Display Mode',
+    autoDetect: 'Auto Detect',
+    tvMode: 'TV Mode',
+    normalMode: 'Normal Mode'
   },
   auth: {
     signInRequired: 'Sign in required',
@@ -225,7 +230,12 @@ const heTranslations = {
     connected: 'מחובר כ',
     notConnected: 'לא מחובר',
     connect: 'חבר חשבון',
-    disconnect: 'התנתק'
+    disconnect: 'התנתק',
+    // New display mode translations
+    displayMode: 'מצב תצוגה',
+    autoDetect: 'זיהוי אוטומטי',
+    tvMode: 'מצב טלוויזיה',
+    normalMode: 'מצב רגיל'
   },
   auth: {
     signInRequired: 'נדרשת התחברות',

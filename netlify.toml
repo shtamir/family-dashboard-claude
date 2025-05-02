@@ -4,4 +4,4 @@
 
 [build.environment]
   NODE_VERSION = "16"
-  NPM_FLAGS = "--prefer-offline --no-audit"
+  NPM_FLAGS = "--legacy-peer-deps"

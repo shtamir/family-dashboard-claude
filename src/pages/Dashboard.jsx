@@ -12,6 +12,7 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+  const [isTvMode, setIsTvMode] = useState(false);
   const [config, setConfig] = useState({
     showCalendar: true,
     showWeather: true,
@@ -20,6 +21,25 @@ const Dashboard = () => {
     showPhotos: true,
     refreshInterval: 5 // minutes
   });
+
+  // Detect TV mode based on screen size
+  useEffect(() => {
+    const detectTvMode = () => {
+      // Consider TV mode if width is larger than 1920px or height is larger than 1080px
+      const isTV = window.innerWidth >= 1920 || window.innerHeight >= 1080;
+      setIsTvMode(isTV);
+    };
+    
+    // Initial detection
+    detectTvMode();
+    
+    // Listen for resize events
+    window.addEventListener('resize', detectTvMode);
+    
+    return () => {
+      window.removeEventListener('resize', detectTvMode);
+    };
+  }, []);
 
   // Load configuration from local storage
   useEffect(() => {
@@ -67,53 +87,66 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard w-full p-4 lg:p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
+    <div className={`dashboard w-full ${isTvMode ? 'p-2 h-[calc(100vh-48px)] overflow-hidden' : 'p-4 lg:p-6'}`}>
+      {/* Smaller header on TV mode */}
+      <header className={`${isTvMode ? 'mb-2' : 'mb-6'}`}>
+        <h1 className={`${isTvMode ? 'text-2xl' : 'text-3xl md:text-4xl'} font-bold text-gray-800 dark:text-white`}>
           {t('dashboard.welcome', { name: user?.name || t('common.family') })}
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300">
-          {new Date().toLocaleDateString(undefined, { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
+        {!isTvMode && (
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            {new Date().toLocaleDateString(undefined, { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </p>
+        )}
+        {isTvMode && (
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {new Date().toLocaleDateString(undefined, { 
+              weekday: 'short', 
+              month: 'short', 
+              day: 'numeric' 
+            })}
+          </p>
+        )}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Grid with fixed height containers for TV mode */}
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${isTvMode ? 'gap-2 h-[calc(100%-48px)]' : 'gap-6'}`}>
         {/* Calendar Widget */}
         {config.showCalendar && (
-          <div className="lg:col-span-2 shadow-lg rounded-lg">
+          <div className={`lg:col-span-2 shadow-lg rounded-lg ${isTvMode ? 'max-h-[calc(50vh-48px)]' : ''}`}>
             <CalendarWidget />
           </div>
         )}
 
         {/* Weather Widget */}
         {config.showWeather && (
-          <div className="shadow-lg rounded-lg">
+          <div className={`shadow-lg rounded-lg ${isTvMode ? 'max-h-[calc(50vh-48px)]' : ''}`}>
             <WeatherWidget />
           </div>
         )}
 
         {/* Messages Widget */}
         {config.showMessages && (
-          <div className="md:col-span-2 lg:col-span-1 shadow-lg rounded-lg">
+          <div className={`md:col-span-2 lg:col-span-1 shadow-lg rounded-lg ${isTvMode ? 'max-h-[calc(50vh-48px)]' : ''}`}>
             <MessagesWidget />
           </div>
         )}
 
         {/* To-Do Widget */}
         {config.showTodos && (
-          <div className="shadow-lg rounded-lg">
+          <div className={`shadow-lg rounded-lg ${isTvMode ? 'max-h-[calc(50vh-48px)]' : ''}`}>
             <TodoWidget />
           </div>
         )}
 
         {/* Photos Widget */}
         {config.showPhotos && (
-          <div className="lg:col-span-2 shadow-lg rounded-lg">
+          <div className={`lg:col-span-2 shadow-lg rounded-lg ${isTvMode ? 'max-h-[calc(50vh-48px)]' : ''}`}>
             <PhotosWidget />
           </div>
         )}

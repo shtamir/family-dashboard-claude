@@ -112,3 +112,30 @@ html {
 .tv-focus:focus {
   animation: tv-focus-ring 1.5s infinite;
 }
+
+/* TV Display Optimization */
+@media (min-width: 1920px) {
+  html {
+    font-size: 16px; /* Base font size for TV */
+  }
+  
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .widget {
+    height: calc(50vh - 3rem);
+    overflow: auto;
+  }
+  
+  /* Reduce icon sizes */
+  svg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+}

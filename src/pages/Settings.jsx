@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS = {
   showMessages: true,
   showTodos: true,
   showPhotos: true,
+  displayMode: 'auto', // 'auto', 'tv', or 'normal'
   password: '', // Default password will be set on first load
 };
 
@@ -33,6 +34,26 @@ const Settings = () => {
   const [passwordError, setPasswordError] = useState('');
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [saveMessage, setSaveMessage] = useState('');
+  const [isTvMode, setIsTvMode] = useState(false);
+
+  // Detect TV mode based on screen size
+  useEffect(() => {
+    const detectTvMode = () => {
+      // Consider TV mode if width is larger than 1920px or height is larger than 1080px
+      const isTV = window.innerWidth >= 1920 || window.innerHeight >= 1080;
+      setIsTvMode(isTV);
+    };
+    
+    // Initial detection
+    detectTvMode();
+    
+    // Listen for resize events
+    window.addEventListener('resize', detectTvMode);
+    
+    return () => {
+      window.removeEventListener('resize', detectTvMode);
+    };
+  }, []);
 
   // Load settings from localStorage
   useEffect(() => {
@@ -95,6 +116,15 @@ const Settings = () => {
     }));
   };
 
+  // Apply TV mode settings
+  const applyDisplayMode = (mode) => {
+    if (mode === 'tv' || (mode === 'auto' && isTvMode)) {
+      document.documentElement.classList.add('tv-mode');
+    } else {
+      document.documentElement.classList.remove('tv-mode');
+    }
+  };
+
   // Save settings
   const saveSettings = () => {
     try {
@@ -107,6 +137,9 @@ const Settings = () => {
         localStorage.setItem('family_portal_language', settings.language);
         document.documentElement.dir = settings.language === 'he' ? 'rtl' : 'ltr';
       }
+      
+      // Apply display mode
+      applyDisplayMode(settings.displayMode);
       
       // Update weather settings
       weatherService.updateConfig({
@@ -135,8 +168,8 @@ const Settings = () => {
   if (isPasswordProtected) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md max-w-md w-full">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
+        <div className={`bg-white dark:bg-gray-800 ${isTvMode ? 'p-6' : 'p-8'} rounded-lg shadow-md max-w-md w-full`}>
+          <h2 className={`${isTvMode ? 'text-xl' : 'text-2xl'} font-bold mb-6 text-gray-800 dark:text-white`}>
             {t('settings.title')}
           </h2>
           
@@ -150,7 +183,7 @@ const Settings = () => {
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && verifyPassword()}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className={`w-full px-4 ${isTvMode ? 'py-1.5 text-lg' : 'py-2'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${isTvMode ? 'tv-focus' : ''}`}
               placeholder="********"
             />
             {passwordError && (
@@ -163,13 +196,13 @@ const Settings = () => {
           <div className="flex justify-between">
             <button
               onClick={() => navigate('/')}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+              className={`px-4 ${isTvMode ? 'py-1.5' : 'py-2'} bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 ${isTvMode ? 'tv-focus' : ''}`}
             >
               {t('common.cancel')}
             </button>
             <button
               onClick={verifyPassword}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className={`px-4 ${isTvMode ? 'py-1.5' : 'py-2'} bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${isTvMode ? 'tv-focus' : ''}`}
             >
               {t('common.confirm')}
             </button>
@@ -181,10 +214,10 @@ const Settings = () => {
 
   // Main settings screen
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
-          <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <div className={`container mx-auto ${isTvMode ? 'px-2 py-2 overflow-hidden h-[calc(100vh-48px)]' : 'px-4 py-6'}`}>
+      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md ${isTvMode ? 'p-3 max-h-full overflow-auto' : 'p-6'}`}>
+        <h2 className={`${isTvMode ? 'text-xl' : 'text-2xl'} font-bold mb-4 text-gray-800 dark:text-white flex items-center`}>
+          <svg className={`${isTvMode ? 'w-5 h-5' : 'w-6 h-6'} mr-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -192,15 +225,15 @@ const Settings = () => {
         </h2>
         
         {saveMessage && (
-          <div className="mb-6 p-3 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded-lg">
+          <div className={`${isTvMode ? 'mb-3 p-2 text-sm' : 'mb-6 p-3'} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded-lg`}>
             {saveMessage}
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${isTvMode ? 'gap-3 text-sm' : 'gap-6'}`}>
           {/* Language Settings */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-white border-b pb-2">
+          <div className="space-y-2">
+            <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
               {t('settings.language')}
             </h3>
             <div className="space-y-2">
@@ -211,7 +244,7 @@ const Settings = () => {
                   value="en"
                   checked={settings.language === 'en'}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.english')}
@@ -224,7 +257,7 @@ const Settings = () => {
                   value="he"
                   checked={settings.language === 'he'}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.hebrew')}
@@ -234,8 +267,8 @@ const Settings = () => {
           </div>
           
           {/* Units Settings */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-white border-b pb-2">
+          <div className="space-y-2">
+            <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
               {t('settings.units')}
             </h3>
             <div className="space-y-2">
@@ -246,7 +279,7 @@ const Settings = () => {
                   value="metric"
                   checked={settings.units === 'metric'}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.metric')}
@@ -259,7 +292,7 @@ const Settings = () => {
                   value="imperial"
                   checked={settings.units === 'imperial'}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.imperial')}
@@ -268,9 +301,57 @@ const Settings = () => {
             </div>
           </div>
           
+          {/* Display Mode Settings */}
+          <div className="space-y-2">
+            <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
+              {t('settings.displayMode')}
+            </h3>
+            <div className="space-y-2">
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="displayMode"
+                  value="auto"
+                  checked={settings.displayMode === 'auto'}
+                  onChange={handleChange}
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
+                />
+                <span className="ml-2 text-gray-700 dark:text-gray-300">
+                  {t('settings.autoDetect')}
+                </span>
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="displayMode"
+                  value="tv"
+                  checked={settings.displayMode === 'tv'}
+                  onChange={handleChange}
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
+                />
+                <span className="ml-2 text-gray-700 dark:text-gray-300">
+                  {t('settings.tvMode')}
+                </span>
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="displayMode"
+                  value="normal"
+                  checked={settings.displayMode === 'normal'}
+                  onChange={handleChange}
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
+                />
+                <span className="ml-2 text-gray-700 dark:text-gray-300">
+                  {t('settings.normalMode')}
+                </span>
+              </label>
+            </div>
+          </div>
+          
           {/* Weather Location */}
-          <div className="space-y-4 md:col-span-2">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-white border-b pb-2">
+          <div className={`space-y-2 ${isTvMode ? 'md:col-span-1' : 'md:col-span-2'}`}>
+            <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
               {t('settings.location')}
             </h3>
             <div>
@@ -280,17 +361,19 @@ const Settings = () => {
                 value={settings.location}
                 onChange={handleChange}
                 placeholder="e.g. London, UK"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className={`w-full ${isTvMode ? 'px-3 py-1.5' : 'px-4 py-2'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${isTvMode ? 'tv-focus' : ''}`}
               />
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {t('weather.setLocationInSettings')}
-              </p>
+              {!isTvMode && (
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  {t('weather.setLocationInSettings')}
+                </p>
+              )}
             </div>
           </div>
           
           {/* Refresh Interval */}
-          <div className="space-y-4 md:col-span-2">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-white border-b pb-2">
+          <div className={`space-y-2 ${isTvMode ? 'md:col-span-1' : 'md:col-span-2'}`}>
+            <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
               {t('settings.refreshInterval')}
             </h3>
             <div className="flex items-center">
@@ -301,7 +384,7 @@ const Settings = () => {
                 max="30"
                 value={settings.refreshInterval}
                 onChange={handleChange}
-                className="w-full max-w-md"
+                className={`w-full max-w-md ${isTvMode ? 'tv-focus' : ''}`}
               />
               <span className="ml-3 text-gray-700 dark:text-gray-300">
                 {settings.refreshInterval} {t('settings.minutes')}
@@ -310,18 +393,18 @@ const Settings = () => {
           </div>
           
           {/* Visible Widgets */}
-          <div className="space-y-4 md:col-span-2">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-white border-b pb-2">
+          <div className={`space-y-2 md:col-span-2`}>
+            <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
               {t('settings.widgets')}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className={`grid grid-cols-1 ${isTvMode ? 'md:grid-cols-3 gap-2' : 'md:grid-cols-2 gap-3'}`}>
               <label className="inline-flex items-center">
                 <input
                   type="checkbox"
                   name="showCalendar"
                   checked={settings.showCalendar}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.showCalendar')}
@@ -333,7 +416,7 @@ const Settings = () => {
                   name="showWeather"
                   checked={settings.showWeather}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.showWeather')}
@@ -345,7 +428,7 @@ const Settings = () => {
                   name="showMessages"
                   checked={settings.showMessages}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.showMessages')}
@@ -357,7 +440,7 @@ const Settings = () => {
                   name="showTodos"
                   checked={settings.showTodos}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.showTodos')}
@@ -369,7 +452,7 @@ const Settings = () => {
                   name="showPhotos"
                   checked={settings.showPhotos}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600"
+                  className={`h-4 w-4 text-blue-600 ${isTvMode ? 'tv-focus' : ''}`}
                 />
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
                   {t('settings.showPhotos')}
@@ -379,8 +462,8 @@ const Settings = () => {
           </div>
           
           {/* Account Info */}
-          <div className="space-y-4 md:col-span-2">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-white border-b pb-2">
+          <div className={`space-y-2 md:col-span-2`}>
+            <h3 className={`${isTvMode ? 'text-base' : 'text-lg'} font-medium text-gray-800 dark:text-white border-b pb-2`}>
               {t('settings.account')}
             </h3>
             {user ? (
@@ -389,13 +472,15 @@ const Settings = () => {
                   <p className="text-gray-700 dark:text-gray-300">
                     {t('settings.connected')}: <span className="font-medium">{user.name || user.email}</span>
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {user.email}
-                  </p>
+                  {!isTvMode && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {user.email}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={signOut}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  className={`${isTvMode ? 'px-3 py-1.5' : 'px-4 py-2'} bg-red-600 text-white rounded-lg hover:bg-red-700 ${isTvMode ? 'tv-focus' : ''}`}
                 >
                   {t('common.logout')}
                 </button>
@@ -407,7 +492,7 @@ const Settings = () => {
                 </p>
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className={`${isTvMode ? 'px-3 py-1.5' : 'px-4 py-2'} bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${isTvMode ? 'tv-focus' : ''}`}
                 >
                   {t('settings.connect')}
                 </button>
@@ -417,16 +502,16 @@ const Settings = () => {
         </div>
         
         {/* Action Buttons */}
-        <div className="mt-8 flex justify-between">
+        <div className={`${isTvMode ? 'mt-4' : 'mt-8'} flex justify-between`}>
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+            className={`${isTvMode ? 'px-4 py-1.5' : 'px-6 py-2'} bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 ${isTvMode ? 'tv-focus' : ''}`}
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={saveSettings}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className={`${isTvMode ? 'px-4 py-1.5' : 'px-6 py-2'} bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${isTvMode ? 'tv-focus' : ''}`}
           >
             {t('common.save')}
           </button>
